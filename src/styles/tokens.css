@@ -1,0 +1,24 @@
+:root {
+  --bg: #F2F5F3;
+  --card: #FFFFFF;
+  --ink: #14211E;
+  --muted: #4B5C58;
+  --line: #CAD5D1;
+  --accent: #1D5B55;
+  --tint: #E8EFEC;
+  --font-serif: Newsreader, Georgia, serif;
+  --font-sans: Inter, system-ui, sans-serif;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101715;
+    --card: #18221F;
+    --ink: #E6EEEB;
+    --muted: #A7B7B2;
+    --line: #2C3B37;
+    --accent: #6FBFB5;
+    --tint: #1C2825;
+  }
+}
