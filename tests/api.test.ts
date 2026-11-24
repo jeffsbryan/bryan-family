@@ -28,7 +28,7 @@ beforeEach(async () => {
 });
 
 const paths = () => fetchMock.mock.calls.map((c) => String(c[0]).slice(base.length));
-const e = (id: string, name: string): SearchEntry => [id, name, null, null];
+const e = (id: string, name: string): SearchEntry => [id, name, null, null, false];
 
 describe('getPerson / getFamily / getManifest', () => {
   it('fetches the bucket once for repeated calls', async () => {
@@ -118,7 +118,7 @@ describe('searchPeople', () => {
   it('returns living entries with null years and honours limit', async () => {
     const r = await api.searchPeople('bryan');
     const living = r.find((x) => x[0] === 'I1');
-    expect(living).toEqual(['I1', 'Stephen Thomas Bryan', null, null]);
+    expect(living).toEqual(['I1', 'Stephen Thomas Bryan', null, null, true]);
     expect(await api.searchPeople('bryan', 1)).toHaveLength(1);
   });
 

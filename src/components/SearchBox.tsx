@@ -40,13 +40,10 @@ export function SearchBox() {
       {active && done.query === query && results.length === 0 && <p className="results-empty">No one found</p>}
       {results.length > 0 && (
         <ul className="results">
-          {results.map(([id, name, born, died]) => {
-            // Search entries carry no living flag, so both-years-null is the only signal we have.
-            // LIMITATION: deceased people with no recorded years also get the "Living person" note for now.
-            const livingNote = born === null && died === null;
+          {results.map(([id, name, born, died, living]) => {
             return (
               <li className="result-row" key={id}>
-                <PersonLink id={id} name={name} birthYear={born} deathYear={died} living={livingNote} />
+                <PersonLink id={id} name={name} birthYear={born} deathYear={died} living={living} />
               </li>
             );
           })}

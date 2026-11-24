@@ -56,6 +56,7 @@ export type SearchEntry = [
   name: string,
   birthYear: number | null,
   deathYear: number | null,
+  living: boolean,
 ];
 
 export interface Manifest {

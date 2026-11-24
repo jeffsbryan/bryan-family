@@ -41,10 +41,9 @@ export function SurnamePage({ surname }: { surname: string }) {
         <p className="lede">No one found</p>
       ) : (
         <ul className="results" style={{ margin: 0 }}>
-          {entries.map(([id, name, born, died]) => (
+          {entries.map(([id, name, born, died, living]) => (
             <li className="result-row" key={id}>
-              {/* Same limitation as SearchBox: entries carry no living flag; both years null shows the note. */}
-              <PersonLink id={id} name={name} birthYear={born} deathYear={died} living={born === null && died === null} />
+              <PersonLink id={id} name={name} birthYear={born} deathYear={died} living={living} />
             </li>
           ))}
         </ul>

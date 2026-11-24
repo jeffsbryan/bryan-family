@@ -18,7 +18,7 @@ export function buildData(pub: PublicFile, now: Date = new Date()): Map<string, 
 
     const year = (type: string): number | null =>
       p.living ? null : (p.events.find((e) => e.type === type && typeof e.year === 'number')?.year ?? null);
-    const entry: SearchEntry = [p.id, p.name, year('BIRT'), year('DEAT')];
+    const entry: SearchEntry = [p.id, p.name, year('BIRT'), year('DEAT'), p.living];
 
     const first = p.givenName.trim().split(/\s+/)[0] ?? '';
     const keys = new Set<string>([p.surname.trim() ? shardKey(p.surname) : '__']);

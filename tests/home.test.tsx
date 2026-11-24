@@ -22,8 +22,9 @@ beforeEach(() => {
 describe('Home', () => {
   it('shows counts, surname chips and search results', async () => {
     vi.mocked(api.searchPeople).mockResolvedValue([
-      ['I1', 'Ada Hayden', 1870, 1931],
-      ['I2', 'Zed Hayden', null, null],
+      ['I1', 'Ada Hayden', 1870, 1931, false],
+      ['I2', 'Zed Hayden', null, null, true],
+      ['I5', 'Old Hayden', null, null, false],
     ]);
     render(<Home />);
     expect(await screen.findByText(/27,981 people in 12,510 families/)).toBeInTheDocument();
@@ -35,7 +36,8 @@ describe('Home', () => {
     expect(link).toHaveAttribute('href', '#/person/I1');
     expect(screen.getByText('1870 – 1931')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Zed Hayden' })).toHaveAttribute('href', '#/person/I2');
-    expect(screen.getByText('Living person')).toBeInTheDocument();
+    expect(screen.getAllByText('Living person')).toHaveLength(1);
+    expect(screen.getByRole('link', { name: 'Old Hayden' })).toBeInTheDocument();
   });
 });
 
@@ -55,13 +57,13 @@ describe('SearchBox', () => {
     let resolveFirst!: (v: import("../src/shared/types").SearchEntry[]) => void;
     vi.mocked(api.searchPeople)
       .mockImplementationOnce(() => new Promise((r) => (resolveFirst = r)))
-      .mockResolvedValueOnce([['I2', 'Second Result', 1900, 1950]]);
+      .mockResolvedValueOnce([['I2', 'Second Result', 1900, 1950, false]]);
     render(<SearchBox />);
     const input = screen.getByLabelText('Search for a person');
     fireEvent.change(input, { target: { value: 'fi' } });
     fireEvent.change(input, { target: { value: 'sec' } });
     await screen.findByRole('link', { name: 'Second Result' });
-    await act(async () => resolveFirst([['I1', 'First Result', 1800, 1850]]));
+    await act(async () => resolveFirst([['I1', 'First Result', 1800, 1850, false]]));
     expect(screen.queryByRole('link', { name: 'First Result' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Second Result' })).toBeInTheDocument();
   });
@@ -70,9 +72,9 @@ describe('SearchBox', () => {
 describe('SurnamePage', () => {
   it('lists matching people sorted by name', async () => {
     vi.mocked(api.loadShard).mockResolvedValue([
-      ['I3', 'Zoe Bryan', 1900, 1960],
-      ['I1', 'Amy Bryan', 1880, null],
-      ['I4', 'Bryan Smith', 1900, 1960],
+      ['I3', 'Zoe Bryan', 1900, 1960, false],
+      ['I1', 'Amy Bryan', 1880, null, false],
+      ['I4', 'Bryan Smith', 1900, 1960, false],
     ]);
     render(<SurnamePage surname="Bryan" />);
     const links = await screen.findAllByRole('link', { name: /Bryan$/ });

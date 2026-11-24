@@ -25,7 +25,8 @@ describe('buildData', () => {
   it('builds search shards', () => {
     const br = get<SearchEntry[]>('search/br.json');
     expect(br.length).toBeGreaterThan(1);
-    expect(br).toContainEqual(['I1', 'Stephen Thomas Bryan', null, null]);
+    expect(br).toContainEqual(['I1', 'Stephen Thomas Bryan', null, null, true]);
+    expect(get<SearchEntry[]>('search/ma.json')).toContainEqual(['I8', 'Mary', null, null, false]);
     expect(get<SearchEntry[]>('search/st.json').map((e) => e[0])).toContain('I1');
     expect(get<SearchEntry[]>('search/__.json').map((e) => e[0])).toContain('I8');
     expect(get<SearchEntry[]>('search/ma.json').map((e) => e[0])).toContain('I8');
