@@ -91,6 +91,24 @@ describe('family view and tree (fixture)', () => {
     expect(i5.hasMoreAncestors).toBe(false);
   });
 
+  it('lists a spouse once when the couple appears in two families (I6 in F4 and F6)', async () => {
+    const t = await getTreeView('I6');
+    expect(ids(t!.spouses)).toEqual(['I7']);
+    expect(ids(t!.children)).toEqual(['I4', 'I9']);
+    const v = await getFamilyView('I6');
+    expect(v?.spouseFamilies.map((f) => f.familyId)).toEqual(['F4', 'F6']);
+  });
+
+  it('lists a child once when two spouse families of one person both name them', async () => {
+    const dup = sanitize(raw as RawFile, {}).file;
+    dup.families.find((f) => f.id === 'F6')!.children.push('I4', 'I4');
+    load(dup);
+    const t = await getTreeView('I6');
+    expect(ids(t!.children)).toEqual(['I4', 'I9']);
+    const v = await getFamilyView('I6');
+    expect(ids(v!.spouseFamilies[1].children)).toEqual(['I9', 'I4']);
+  });
+
   it('getTreeView of unknown id is undefined', async () => {
     expect(await getTreeView('NOPE')).toBeUndefined();
   });

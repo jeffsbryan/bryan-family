@@ -5,3 +5,6 @@ public/data/
 data/raw/
 *.ged
 Bryan_*.json
+data/*
+!data/family.public.json
+!data/overrides.json

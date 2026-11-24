@@ -54,6 +54,18 @@ describe('getPerson / getFamily / getManifest', () => {
     expect(await api.getPerson('I4')).toBeUndefined();
   });
 
+  it('does not resolve prototype keys as ids', async () => {
+    stub({
+      'people/0.json': () => new Response(JSON.stringify({ I200: { id: 'I200' } })),
+      'families/0.json': () => new Response(JSON.stringify({ F200: { id: 'F200' } })),
+    });
+    api = await import('../src/data/api');
+    for (const id of ['constructor', '__proto__', 'toString', 'hasOwnProperty']) {
+      expect(await api.getPerson(id)).toBeUndefined();
+      expect(await api.getFamily(id)).toBeUndefined();
+    }
+  });
+
   it('loads the manifest', async () => {
     expect((await api.getManifest()).bucketCount).toBe(200);
   });

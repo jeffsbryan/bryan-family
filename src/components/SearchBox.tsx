@@ -37,23 +37,29 @@ export function SearchBox() {
         value={query}
         onChange={(e) => onChange(e.target.value)}
       />
-      {active && done.query === query && done.error && (
-        <p className="results-empty" role="alert">
-          Search is unavailable right now. Please try again.
-        </p>
-      )}
-      {active && done.query === query && !done.error && results.length === 0 && <p className="results-empty">No one found</p>}
-      {results.length > 0 && (
-        <ul className="results">
-          {results.map(([id, name, born, died, living, place]) => {
-            return (
-              <li className="result-row" key={id}>
-                <PersonLink id={id} name={name} birthYear={born} deathYear={died} living={living} place={place} />
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <div aria-live="polite">
+        {active && done.query === query && done.error && (
+          <p className="results-empty" role="alert">
+            Search is unavailable right now. Please try again.
+          </p>
+        )}
+        {active && done.query === query && !done.error && results.length === 0 && (
+          <p className="results-empty" role="status">
+            No one found
+          </p>
+        )}
+        {results.length > 0 && (
+          <ul className="results">
+            {results.map(([id, name, born, died, living, place]) => {
+              return (
+                <li className="result-row" key={id}>
+                  <PersonLink id={id} name={name} birthYear={born} deathYear={died} living={living} place={place} />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

@@ -44,12 +44,12 @@ export async function getManifest(): Promise<Manifest> {
 
 export async function getPerson(id: string): Promise<PublicPerson | undefined> {
   const bucket = await load<Record<string, PublicPerson>, undefined>(`people/${bucketOf(id, BUCKET_COUNT)}.json`, undefined);
-  return bucket?.[id];
+  return bucket && Object.hasOwn(bucket, id) ? bucket[id] : undefined;
 }
 
 export async function getFamily(id: string): Promise<PublicFamily | undefined> {
   const bucket = await load<Record<string, PublicFamily>, undefined>(`families/${bucketOf(id, BUCKET_COUNT)}.json`, undefined);
-  return bucket?.[id];
+  return bucket && Object.hasOwn(bucket, id) ? bucket[id] : undefined;
 }
 
 export async function loadShard(key: string): Promise<SearchEntry[]> {

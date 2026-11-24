@@ -153,3 +153,16 @@ describe('PersonLink sub-line', () => {
     expect(screen.queryByText(/Secret Town/)).not.toBeInTheDocument();
   });
 });
+
+describe('SearchBox live region', () => {
+  it('announces results politely and gives "No one found" role status', async () => {
+    vi.mocked(api.searchPeople).mockResolvedValue([]);
+    const { container } = render(<SearchBox />);
+    const live = container.querySelector('[aria-live="polite"]');
+    expect(live).not.toBeNull();
+    fireEvent.change(screen.getByLabelText('Search for a person'), { target: { value: 'zzz' } });
+    const none = await screen.findByRole('status');
+    expect(none).toHaveTextContent('No one found');
+    expect(live).toContainElement(none);
+  });
+});

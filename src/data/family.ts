@@ -34,9 +34,15 @@ export interface TreeView {
   children: PublicPerson[];
 }
 
+/** First occurrence of each person id, order preserved (keeps React keys unique). */
+function uniqueById(list: PublicPerson[]): PublicPerson[] {
+  const seen = new Set<string>();
+  return list.filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)));
+}
+
 async function people(ids: (string | undefined)[]): Promise<PublicPerson[]> {
   const found = await Promise.all(ids.map((id) => (id ? getPerson(id) : Promise.resolve(undefined))));
-  return found.filter((p): p is PublicPerson => p !== undefined);
+  return uniqueById(found.filter((p): p is PublicPerson => p !== undefined));
 }
 
 async function one(id: string | undefined): Promise<PublicPerson | undefined> {
@@ -93,7 +99,7 @@ async function mainParentsOf(person: PublicPerson, path: Set<string>): Promise<P
   if (!famId) return [];
   const pf = await parentFamily(famId);
   if (!pf) return [];
-  return [pf.father, pf.mother].filter((p): p is PublicPerson => p !== undefined && !path.has(p.id));
+  return uniqueById([pf.father, pf.mother].filter((p): p is PublicPerson => p !== undefined && !path.has(p.id)));
 }
 
 async function buildNode(person: PublicPerson, depth: number, up: number, path: Set<string>): Promise<TreeNode> {
@@ -112,7 +118,7 @@ export async function getTreeView(id: string, up = 2): Promise<TreeView | undefi
   const [root, fams] = await Promise.all([buildNode(person, 0, up, new Set()), spouseFamilies(person)]);
   return {
     root,
-    spouses: fams.map((f) => f.spouse).filter((s): s is PublicPerson => s !== undefined),
-    children: fams.flatMap((f) => f.children),
+    spouses: uniqueById(fams.map((f) => f.spouse).filter((s): s is PublicPerson => s !== undefined)),
+    children: uniqueById(fams.flatMap((f) => f.children)),
   };
 }
