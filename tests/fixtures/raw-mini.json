@@ -1,0 +1,384 @@
+{
+  "format": "gedfile.com/json/v1",
+  "individuals": [
+    {
+      "id": "I1",
+      "name": "Stephen Thomas Bryan",
+      "givenName": "Stephen Thomas",
+      "surname": "Bryan",
+      "sex": "M",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1948,
+          "place": "Scranton PA"
+        },
+        {
+          "type": "RESI",
+          "label": "Resided",
+          "year": 1972,
+          "place": "English Village",
+          "value": "Employer: W. B. Saunders Publishing Co.; Advertising Copywriter Occupation: Advertising Copywriter"
+        }
+      ],
+      "childOfFamilies": [
+        "F1"
+      ],
+      "spouseOfFamilies": [
+        "F3"
+      ],
+      "occupation": "Advertising Copywriter"
+    },
+    {
+      "id": "I2",
+      "name": "Hayden Gitt Bryan",
+      "givenName": "Hayden Gitt",
+      "surname": "Bryan",
+      "sex": "M",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1908,
+          "place": "Atlantic City NJ"
+        },
+        {
+          "type": "DEAT",
+          "label": "Died",
+          "year": 1960,
+          "place": "Philadelphia PA"
+        }
+      ],
+      "childOfFamilies": [
+        "F2"
+      ],
+      "spouseOfFamilies": [
+        "F1"
+      ]
+    },
+    {
+      "id": "I3",
+      "name": "Pauline Agnes Thorp",
+      "givenName": "Pauline Agnes",
+      "surname": "Thorp",
+      "sex": "F",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1918
+        },
+        {
+          "type": "DEAT",
+          "label": "Died",
+          "year": 1973
+        }
+      ],
+      "childOfFamilies": [],
+      "spouseOfFamilies": [
+        "F1"
+      ]
+    },
+    {
+      "id": "I4",
+      "name": "Oliver Bryan",
+      "givenName": "Oliver",
+      "surname": "Bryan",
+      "sex": "M",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1870,
+          "place": "New Haven CT"
+        },
+        {
+          "type": "DEAT",
+          "label": "Died",
+          "year": 1931
+        },
+        {
+          "type": "RESI",
+          "label": "Resided",
+          "year": 1910,
+          "place": "Atlantic City Ward 3, Atlantic, New Jersey, United States"
+        },
+        {
+          "type": "RESI",
+          "label": "Resided",
+          "year": 1910,
+          "place": "Atlantic City Ward 3, Atlantic, New Jersey, United States"
+        },
+        {
+          "type": "RESI",
+          "label": "Resided",
+          "year": 1910,
+          "place": "Atlantic City Ward 3, Atlantic, New Jersey, United States"
+        }
+      ],
+      "childOfFamilies": [
+        "F4"
+      ],
+      "spouseOfFamilies": [
+        "F2"
+      ]
+    },
+    {
+      "id": "I5",
+      "name": "Bessie Ida Gitt",
+      "givenName": "Bessie Ida",
+      "surname": "Gitt",
+      "sex": "F",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1872
+        },
+        {
+          "type": "DEAT",
+          "label": "Died",
+          "year": 1946
+        }
+      ],
+      "childOfFamilies": [],
+      "spouseOfFamilies": [
+        "F2"
+      ]
+    },
+    {
+      "id": "I6",
+      "name": "Benjamin Sherman Bryan",
+      "givenName": "Benjamin Sherman",
+      "surname": "Bryan",
+      "sex": "M",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1826
+        },
+        {
+          "type": "DEAT",
+          "label": "Died",
+          "year": 1896
+        }
+      ],
+      "childOfFamilies": [],
+      "spouseOfFamilies": [
+        "F4",
+        "F6"
+      ]
+    },
+    {
+      "id": "I7",
+      "name": "Maria Louise Hayden",
+      "givenName": "Maria Louise",
+      "surname": "Hayden",
+      "sex": "F",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1840
+        },
+        {
+          "type": "DEAT",
+          "label": "Died",
+          "year": 1933
+        }
+      ],
+      "childOfFamilies": [],
+      "spouseOfFamilies": [
+        "F4",
+        "F6"
+      ]
+    },
+    {
+      "id": "I8",
+      "name": "Mary",
+      "givenName": "Mary",
+      "surname": "",
+      "sex": "F",
+      "events": [],
+      "childOfFamilies": [],
+      "spouseOfFamilies": []
+    },
+    {
+      "id": "I9",
+      "name": "Edwin Bryan",
+      "givenName": "Edwin",
+      "surname": "Bryan",
+      "sex": "M",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1938
+        }
+      ],
+      "childOfFamilies": [
+        "F2",
+        "F6"
+      ],
+      "spouseOfFamilies": []
+    },
+    {
+      "id": "I10",
+      "name": "Ray Bryan",
+      "givenName": "Ray",
+      "surname": "Bryan",
+      "sex": "M",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1940
+        }
+      ],
+      "childOfFamilies": [],
+      "spouseOfFamilies": []
+    },
+    {
+      "id": "I11",
+      "name": "Lee Bryan",
+      "givenName": "Lee",
+      "surname": "Bryan",
+      "sex": "M",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1941
+        },
+        {
+          "type": "DEAT",
+          "label": "Died",
+          "year": 1990
+        }
+      ],
+      "childOfFamilies": [],
+      "spouseOfFamilies": []
+    },
+    {
+      "id": "I12",
+      "name": "Sam Bryan",
+      "givenName": "Sam",
+      "surname": "Bryan",
+      "sex": "M",
+      "events": [
+        {
+          "type": "CHR",
+          "label": "Christened",
+          "year": 1955
+        }
+      ],
+      "childOfFamilies": [
+        "F5"
+      ],
+      "spouseOfFamilies": []
+    },
+    {
+      "id": "I13",
+      "name": "Pat O'Brien",
+      "givenName": "Pat",
+      "surname": "O'Brien",
+      "sex": "M",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1900
+        },
+        {
+          "type": "DEAT",
+          "label": "Died",
+          "year": 1980
+        }
+      ],
+      "childOfFamilies": [],
+      "spouseOfFamilies": [
+        "F5"
+      ]
+    },
+    {
+      "id": "I14",
+      "name": "Carol Bryan",
+      "givenName": "Carol",
+      "surname": "Bryan",
+      "sex": "F",
+      "events": [
+        {
+          "type": "BIRT",
+          "label": "Born",
+          "year": 1950
+        }
+      ],
+      "childOfFamilies": [],
+      "spouseOfFamilies": [
+        "F3"
+      ]
+    }
+  ],
+  "families": [
+    {
+      "id": "F1",
+      "husband": "I2",
+      "wife": "I3",
+      "children": [
+        "I1"
+      ],
+      "marriage": {
+        "type": "MARR",
+        "label": "Married",
+        "year": 1943,
+        "place": "Camden NJ"
+      }
+    },
+    {
+      "id": "F2",
+      "husband": "I4",
+      "wife": "I5",
+      "children": [
+        "I2",
+        "I9"
+      ]
+    },
+    {
+      "id": "F3",
+      "husband": "I1",
+      "wife": "I14",
+      "children": [],
+      "marriage": {
+        "type": "MARR",
+        "label": "Married",
+        "year": 1972,
+        "place": "Palmyra PA"
+      }
+    },
+    {
+      "id": "F4",
+      "husband": "I6",
+      "wife": "I7",
+      "children": [
+        "I4"
+      ]
+    },
+    {
+      "id": "F5",
+      "husband": "I13",
+      "children": [
+        "I12"
+      ]
+    },
+    {
+      "id": "F6",
+      "husband": "I6",
+      "wife": "I7",
+      "children": [
+        "I9"
+      ]
+    }
+  ]
+}
