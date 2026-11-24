@@ -1,6 +1,12 @@
 import type { Manifest, PublicFile, SearchEntry } from '../../src/shared/types';
 import { BUCKET_COUNT, bucketOf, shardKey } from '../../src/shared/keys';
-import { cleanEvents } from '../../src/shared/places';
+import { birthYear } from '../../src/shared/living';
+import { cleanEvents, normalizePlace } from '../../src/shared/places';
+
+/** Normalized place cut to its first two comma-separated parts. */
+function shortPlace(place: string): string {
+  return normalizePlace(place).split(',').slice(0, 2).map((s) => s.trim()).filter(Boolean).join(', ');
+}
 
 export function buildData(pub: PublicFile, now: Date = new Date()): Map<string, unknown> {
   const out = new Map<string, unknown>();
@@ -16,9 +22,16 @@ export function buildData(pub: PublicFile, now: Date = new Date()): Map<string, 
     bucket[p.id] = { ...p, events: cleanEvents(p.events) };
     people.set(n, bucket);
 
-    const year = (type: string): number | null =>
-      p.living ? null : (p.events.find((e) => e.type === type && typeof e.year === 'number')?.year ?? null);
-    const entry: SearchEntry = [p.id, p.name, year('BIRT'), year('DEAT'), p.living];
+    const death = p.living ? undefined : p.events.find((e) => e.type === 'DEAT' && typeof e.year === 'number')?.year;
+    const birthPlace = p.living ? undefined : p.events.find((e) => e.type === 'BIRT' && e.place && shortPlace(e.place))?.place;
+    const entry: SearchEntry = [
+      p.id,
+      p.name,
+      p.living ? null : (birthYear(p) ?? null),
+      death ?? null,
+      p.living,
+      birthPlace ? shortPlace(birthPlace) : null,
+    ];
 
     const first = p.givenName.trim().split(/\s+/)[0] ?? '';
     const keys = new Set<string>([p.surname.trim() ? shardKey(p.surname) : '__']);

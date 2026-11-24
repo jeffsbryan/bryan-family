@@ -37,7 +37,7 @@ describe('PersonPage', () => {
     render(<PersonPage id="I2" />);
     expect(await screen.findByRole('heading', { level: 1, name: 'Hayden Gitt Bryan' })).toBeInTheDocument();
     expect(screen.getByText('Born 1908 in Atlantic City NJ · Died 1960 in Philadelphia PA')).toBeInTheDocument();
-    expect(document.title).toBe('Hayden Gitt Bryan · Bryan Family Tree');
+    await waitFor(() => expect(document.title).toBe('Hayden Gitt Bryan · Bryan Family Tree'));
 
     const timeline = screen.getByRole('list', { name: 'Life timeline' });
     expect(within(timeline).getByText('1908')).toBeInTheDocument();
@@ -117,6 +117,6 @@ describe('PersonPage', () => {
     const { rerender } = render(<PersonPage id="I2" />);
     rerender(<PersonPage id="I4" />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Oliver Bryan'));
-    expect(document.title).toBe('Oliver Bryan · Bryan Family Tree');
+    await waitFor(() => expect(document.title).toBe('Oliver Bryan · Bryan Family Tree'));
   });
 });

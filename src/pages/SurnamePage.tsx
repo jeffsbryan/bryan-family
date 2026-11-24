@@ -41,9 +41,9 @@ export function SurnamePage({ surname }: { surname: string }) {
         <p className="lede">No one found</p>
       ) : (
         <ul className="results" style={{ margin: 0 }}>
-          {entries.map(([id, name, born, died, living]) => (
+          {entries.map(([id, name, born, died, living, place]) => (
             <li className="result-row" key={id}>
-              <PersonLink id={id} name={name} birthYear={born} deathYear={died} living={living} />
+              <PersonLink id={id} name={name} birthYear={born} deathYear={died} living={living} place={place} />
             </li>
           ))}
         </ul>

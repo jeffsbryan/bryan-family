@@ -57,6 +57,8 @@ export type SearchEntry = [
   birthYear: number | null,
   deathYear: number | null,
   living: boolean,
+  /** Normalized BIRT place cut to its first two comma-separated parts; null for living people or when unknown. */
+  place: string | null,
 ];
 
 export interface Manifest {

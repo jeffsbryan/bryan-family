@@ -25,11 +25,42 @@ describe('buildData', () => {
   it('builds search shards', () => {
     const br = get<SearchEntry[]>('search/br.json');
     expect(br.length).toBeGreaterThan(1);
-    expect(br).toContainEqual(['I1', 'Stephen Thomas Bryan', null, null, true]);
-    expect(get<SearchEntry[]>('search/ma.json')).toContainEqual(['I8', 'Mary', null, null, false]);
+    expect(br).toContainEqual(['I1', 'Stephen Thomas Bryan', null, null, true, null]);
+    expect(get<SearchEntry[]>('search/ma.json')).toContainEqual(['I8', 'Mary', null, null, false, null]);
     expect(get<SearchEntry[]>('search/st.json').map((e) => e[0])).toContain('I1');
     expect(get<SearchEntry[]>('search/__.json').map((e) => e[0])).toContain('I8');
     expect(get<SearchEntry[]>('search/ma.json').map((e) => e[0])).toContain('I8');
+  });
+
+  it('search entries carry the trimmed birth place; living entries have none', () => {
+    const entries = [...out].filter(([p]) => p.startsWith('search/')).flatMap(([, v]) => v as SearchEntry[]);
+    const find = (id: string) => entries.find((e) => e[0] === id)!;
+    expect(find('I4')).toEqual(['I4', 'Oliver Bryan', 1870, 1931, false, 'New Haven CT']);
+    for (const e of entries.filter((x) => x[4])) {
+      expect(e.slice(2)).toEqual([null, null, true, null]);
+    }
+  });
+
+  it('cuts the place to two parts, normalized, and uses birthYear() for the year', () => {
+    const file = sanitize(
+      {
+        format: 'x',
+        individuals: [
+          {
+            id: 'I50', name: 'Ann Test', givenName: 'Ann', surname: 'Test', sex: 'F',
+            events: [
+              { type: 'BIRT', label: 'Born', date: 'Abt 1850', place: 'Hartford, Hartford, Connecticut, United States' },
+              { type: 'DEAT', label: 'Died', year: 1900 },
+            ],
+            childOfFamilies: [], spouseOfFamilies: [],
+          },
+        ],
+        families: [],
+      },
+      {},
+    ).file;
+    const entry = (buildData(file).get('search/te.json') as SearchEntry[])[0];
+    expect(entry).toEqual(['I50', 'Ann Test', 1850, 1900, false, 'Hartford, Hartford']);
   });
 
   it('has no duplicate ids per shard and sorts by name then id', () => {

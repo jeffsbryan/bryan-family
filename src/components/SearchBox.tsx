@@ -45,10 +45,10 @@ export function SearchBox() {
       {active && done.query === query && !done.error && results.length === 0 && <p className="results-empty">No one found</p>}
       {results.length > 0 && (
         <ul className="results">
-          {results.map(([id, name, born, died, living]) => {
+          {results.map(([id, name, born, died, living, place]) => {
             return (
               <li className="result-row" key={id}>
-                <PersonLink id={id} name={name} birthYear={born} deathYear={died} living={living} />
+                <PersonLink id={id} name={name} birthYear={born} deathYear={died} living={living} place={place} />
               </li>
             );
           })}

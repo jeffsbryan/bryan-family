@@ -7,16 +7,17 @@ export interface PersonLinkProps {
   birthYear?: number | null;
   deathYear?: number | null;
   living?: boolean;
+  place?: string | null;
 }
 
-export function PersonLink({ id, name, birthYear = null, deathYear = null, living = false }: PersonLinkProps) {
-  const span = lifespan(birthYear, deathYear, living);
+export function PersonLink({ id, name, birthYear = null, deathYear = null, living = false, place = null }: PersonLinkProps) {
+  const sub = living ? 'Living person' : [lifespan(birthYear, deathYear, living), place ?? ''].filter(Boolean).join(' · ');
   return (
     <>
       <a className="person-link" href={hrefFor({ name: 'person', id })}>
         {name}
       </a>
-      {living ? <span className="person-sub">Living person</span> : span ? <span className="person-sub">{span}</span> : null}
+      {sub ? <span className="person-sub">{sub}</span> : null}
     </>
   );
 }

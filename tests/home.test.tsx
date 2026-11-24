@@ -22,9 +22,9 @@ beforeEach(() => {
 describe('Home', () => {
   it('shows counts, surname chips and search results', async () => {
     vi.mocked(api.searchPeople).mockResolvedValue([
-      ['I1', 'Ada Hayden', 1870, 1931, false],
-      ['I2', 'Zed Hayden', null, null, true],
-      ['I5', 'Old Hayden', null, null, false],
+      ['I1', 'Ada Hayden', 1870, 1931, false, 'New Haven, Connecticut'],
+      ['I2', 'Zed Hayden', null, null, true, null],
+      ['I5', 'Old Hayden', null, null, false, null],
     ]);
     render(<Home />);
     expect(await screen.findByText(/27,981 people in 12,510 families/)).toBeInTheDocument();
@@ -34,7 +34,7 @@ describe('Home', () => {
     fireEvent.change(screen.getByLabelText('Search for a person'), { target: { value: 'hay' } });
     const link = await screen.findByRole('link', { name: 'Ada Hayden' });
     expect(link).toHaveAttribute('href', '#/person/I1');
-    expect(screen.getByText('1870 – 1931')).toBeInTheDocument();
+    expect(screen.getByText('1870 – 1931 · New Haven, Connecticut')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Zed Hayden' })).toHaveAttribute('href', '#/person/I2');
     expect(screen.getAllByText('Living person')).toHaveLength(1);
     expect(screen.getByRole('link', { name: 'Old Hayden' })).toBeInTheDocument();
@@ -57,13 +57,13 @@ describe('SearchBox', () => {
     let resolveFirst!: (v: import("../src/shared/types").SearchEntry[]) => void;
     vi.mocked(api.searchPeople)
       .mockImplementationOnce(() => new Promise((r) => (resolveFirst = r)))
-      .mockResolvedValueOnce([['I2', 'Second Result', 1900, 1950, false]]);
+      .mockResolvedValueOnce([['I2', 'Second Result', 1900, 1950, false, null]]);
     render(<SearchBox />);
     const input = screen.getByLabelText('Search for a person');
     fireEvent.change(input, { target: { value: 'fi' } });
     fireEvent.change(input, { target: { value: 'sec' } });
     await screen.findByRole('link', { name: 'Second Result' });
-    await act(async () => resolveFirst([['I1', 'First Result', 1800, 1850, false]]));
+    await act(async () => resolveFirst([['I1', 'First Result', 1800, 1850, false, null]]));
     expect(screen.queryByRole('link', { name: 'First Result' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Second Result' })).toBeInTheDocument();
   });
@@ -74,7 +74,7 @@ describe('SearchBox errors', () => {
   it('shows an error, not No one found, and clears it on a later success', async () => {
     vi.mocked(api.searchPeople)
       .mockRejectedValueOnce(new Error('boom'))
-      .mockResolvedValueOnce([['I1', 'Ada Hayden', 1870, 1931, false]]);
+      .mockResolvedValueOnce([['I1', 'Ada Hayden', 1870, 1931, false, 'New Haven, Connecticut']]);
     render(<SearchBox />);
     const input = screen.getByLabelText('Search for a person');
     fireEvent.change(input, { target: { value: 'hay' } });
@@ -89,7 +89,7 @@ describe('SearchBox errors', () => {
     let rejectFirst!: (e: Error) => void;
     vi.mocked(api.searchPeople)
       .mockImplementationOnce(() => new Promise((_, rej) => (rejectFirst = rej)))
-      .mockResolvedValueOnce([['I2', 'Second Result', 1900, 1950, false]]);
+      .mockResolvedValueOnce([['I2', 'Second Result', 1900, 1950, false, null]]);
     render(<SearchBox />);
     const input = screen.getByLabelText('Search for a person');
     fireEvent.change(input, { target: { value: 'fi' } });
@@ -104,9 +104,9 @@ describe('SearchBox errors', () => {
 describe('SurnamePage', () => {
   it('lists matching people sorted by name', async () => {
     vi.mocked(api.loadShard).mockResolvedValue([
-      ['I3', 'Zoe Bryan', 1900, 1960, false],
-      ['I1', 'Amy Bryan', 1880, null, false],
-      ['I4', 'Bryan Smith', 1900, 1960, false],
+      ['I3', 'Zoe Bryan', 1900, 1960, false, null],
+      ['I1', 'Amy Bryan', 1880, null, false, null],
+      ['I4', 'Bryan Smith', 1900, 1960, false, null],
     ]);
     render(<SurnamePage surname="Bryan" />);
     const links = await screen.findAllByRole('link', { name: /Bryan$/ });
@@ -132,5 +132,24 @@ describe('App routing', () => {
       window.dispatchEvent(new HashChangeEvent('hashchange'));
     });
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument());
+  });
+});
+
+describe('PersonLink sub-line', () => {
+  it('shows years and place, place alone, years alone, and nothing extra for living', async () => {
+    const { PersonLink } = await import('../src/components/PersonLink');
+    render(
+      <ul>
+        <li><PersonLink id="I1" name="A" birthYear={1870} deathYear={1931} place="New Haven, Connecticut" /></li>
+        <li><PersonLink id="I2" name="B" place="Reno, Nevada" /></li>
+        <li><PersonLink id="I3" name="C" birthYear={1900} /></li>
+        <li><PersonLink id="I4" name="D" living place="Secret Town" /></li>
+      </ul>,
+    );
+    expect(screen.getByText('1870 – 1931 · New Haven, Connecticut')).toBeInTheDocument();
+    expect(screen.getByText('Reno, Nevada')).toBeInTheDocument();
+    expect(screen.getByText('1900 –')).toBeInTheDocument();
+    expect(screen.getByText('Living person')).toBeInTheDocument();
+    expect(screen.queryByText(/Secret Town/)).not.toBeInTheDocument();
   });
 });
