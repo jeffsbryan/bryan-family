@@ -19,6 +19,8 @@ try {
   console.log(`overridesApplied: ${r.overridesApplied}`);
   console.log(`born 1926-1940 with no death record: ${r.bornAfter1925UpTo1940NoDeath.length}`);
   for (const p of r.bornAfter1925UpTo1940NoDeath) console.log(`  ${p.id}  ${p.name}`);
+  console.log(`no birth year but recent evidence: ${r.noBirthYearRecentEvidence.length}`);
+  for (const p of r.noBirthYearRecentEvidence) console.log(`  ${p.id}  ${p.name}`);
 } catch (err) {
   console.error(`Sanitize failed: ${err instanceof Error ? err.message : String(err)}`);
   process.exit(1);

@@ -17,6 +17,26 @@ export interface SanitizeReport {
   livingWithDeathRecord: number;
   bornAfter1925UpTo1940NoDeath: { id: string; name: string }[];
   overridesApplied: number;
+  noBirthYearRecentEvidence: { id: string; name: string }[];
+}
+
+/** Throws if any override value is not exactly 'living'/'deceased' or any id is unknown. */
+export function validateOverrides(overrides: unknown, ids: Iterable<string>): Overrides {
+  if (overrides === null || typeof overrides !== 'object' || Array.isArray(overrides)) {
+    throw new Error('Invalid overrides: expected a JSON object mapping id to "living" or "deceased"');
+  }
+  const known = new Set(ids);
+  for (const [id, value] of Object.entries(overrides)) {
+    if (value !== 'living' && value !== 'deceased') {
+      throw new Error(
+        `Invalid override for ${id}: ${JSON.stringify(value)} (must be exactly "living" or "deceased")`,
+      );
+    }
+    if (!known.has(id)) {
+      throw new Error(`Invalid override: id ${id} (value ${JSON.stringify(value)}) is not in the raw data`);
+    }
+  }
+  return overrides as Overrides;
 }
 
 // Every output object is built field by field. Never spread an input object.
@@ -89,7 +109,15 @@ export function sanitize(
     livingWithDeathRecord: 0,
     bornAfter1925UpTo1940NoDeath: [],
     overridesApplied: 0,
+    noBirthYearRecentEvidence: [],
   };
+  const recentMarriageSpouses = new Set<string>();
+  for (const f of raw.families) {
+    if (typeof f.marriage?.year === 'number' && f.marriage.year > cutoff) {
+      if (f.husband !== undefined) recentMarriageSpouses.add(f.husband);
+      if (f.wife !== undefined) recentMarriageSpouses.add(f.wife);
+    }
+  }
 
   const individuals = raw.individuals.map((i) => {
     if (Object.prototype.hasOwnProperty.call(overrides, i.id)) report.overridesApplied++;
@@ -100,6 +128,14 @@ export function sanitize(
       return livingPerson(i);
     }
     const y = birthYear(i);
+    if (
+      y === undefined &&
+      !hasDeathRecord(i) &&
+      (i.events.some((e) => typeof e.year === 'number' && e.year > cutoff) ||
+        recentMarriageSpouses.has(i.id))
+    ) {
+      report.noBirthYearRecentEvidence.push({ id: i.id, name: i.name });
+    }
     if (y !== undefined && y >= 1926 && y <= 1940 && !hasDeathRecord(i)) {
       report.bornAfter1925UpTo1940NoDeath.push({ id: i.id, name: i.name });
     }
@@ -116,7 +152,10 @@ export function sanitizeFile(
   overridesPath: string,
 ): SanitizeReport {
   const raw = JSON.parse(readFileSync(rawPath, 'utf8')) as RawFile;
-  const overrides = JSON.parse(readFileSync(overridesPath, 'utf8')) as Overrides;
+  const overrides = validateOverrides(
+    JSON.parse(readFileSync(overridesPath, 'utf8')),
+    raw.individuals.map((i) => i.id),
+  );
   const { file, report } = sanitize(raw, overrides);
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, JSON.stringify(file, null, 2) + '\n');

@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import raw from './fixtures/raw-mini.json';
 import type { RawFile } from '../src/shared/types';
-import { sanitize } from '../scripts/lib/sanitize';
+import { mkdtempSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { sanitize, sanitizeFile } from '../scripts/lib/sanitize';
 
 const rawFile = raw as RawFile;
 const clone = (): RawFile => JSON.parse(JSON.stringify(rawFile));
@@ -87,5 +90,66 @@ describe('sanitize', () => {
     expect(out.report.overridesApplied).toBe(2);
     expect(out.file.individuals.find((i) => i.id === 'I2')!.events).toEqual([]);
     expect(out.file.individuals.find((i) => i.id === 'I1')!.living).toBe(false);
+  });
+});
+
+describe('override validation', () => {
+  const setup = (overrides: unknown) => {
+    const dir = mkdtempSync(join(tmpdir(), 'sanitize-'));
+    const rawP = join(dir, 'raw.json');
+    const ovP = join(dir, 'overrides.json');
+    const outP = join(dir, 'out', 'family.public.json');
+    writeFileSync(rawP, JSON.stringify(rawFile));
+    writeFileSync(ovP, JSON.stringify(overrides));
+    return { rawP, ovP, outP };
+  };
+
+  it('rejects a bad value and names id and value', () => {
+    const { rawP, ovP, outP } = setup({ I2: 'Living' });
+    expect(() => sanitizeFile(rawP, outP, ovP)).toThrow(/I2.*Living/);
+  });
+
+  it('rejects an unknown id', () => {
+    const { rawP, ovP, outP } = setup({ I999: 'living' });
+    expect(() => sanitizeFile(rawP, outP, ovP)).toThrow(/I999/);
+  });
+
+  it('accepts valid overrides', () => {
+    const { rawP, ovP, outP } = setup({ I2: 'living', I1: 'deceased' });
+    const r = sanitizeFile(rawP, outP, ovP);
+    expect(r.overridesApplied).toBe(2);
+    const out = JSON.parse(readFileSync(outP, 'utf8'));
+    expect(out.individuals.find((i: any) => i.id === 'I2').living).toBe(true);
+  });
+
+  it('does not write output when validation fails', () => {
+    const { rawP, ovP, outP } = setup({ I2: 'alive' });
+    expect(() => sanitizeFile(rawP, outP, ovP)).toThrow();
+    expect(existsSync(outP)).toBe(false);
+  });
+});
+
+describe('noBirthYearRecentEvidence', () => {
+  const ind = (id: string, events: any[] = [], spouse: string[] = []) => ({
+    id, name: `Person ${id}`, givenName: id, surname: 'X', sex: 'M', events,
+    childOfFamilies: [], spouseOfFamilies: spouse,
+  });
+  const mini: RawFile = {
+    format: 'x',
+    individuals: [
+      ind('A', [{ type: 'RESI', label: 'Resided', year: 1972 }]),
+      ind('B', [], ['F1']),
+      ind('C', [{ type: 'RESI', label: 'Resided', year: 1900 }]),
+      ind('D', [{ type: 'RESI', label: 'Resided', year: 1972 }, { type: 'DEAT', label: 'Died', year: 1980 }]),
+    ],
+    families: [{ id: 'F1', husband: 'B', children: [], marriage: { type: 'MARR', label: 'Married', year: 1972 } }],
+  };
+  it('lists only qualifying people and does not change behavior', () => {
+    const { file: f, report: r } = sanitize(mini, {});
+    expect(r.noBirthYearRecentEvidence).toEqual([
+      { id: 'A', name: 'Person A' },
+      { id: 'B', name: 'Person B' },
+    ]);
+    expect(f.individuals.every((i) => i.living === false)).toBe(true);
   });
 });
