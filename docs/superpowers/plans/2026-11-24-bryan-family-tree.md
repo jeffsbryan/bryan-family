@@ -129,7 +129,7 @@ Families: F1 husband I2, wife I3, marriage 1943 "Camden NJ", children [I1]. F2 h
   - F3 (I1 + I14) has no `marriage` and no `divorce`; F1 (both deceased) is unchanged; a family with one living spouse and one deceased spouse also loses `marriage`.
   - `JSON.stringify(file)` contains none of: `"Scranton PA"`, `"1948"`, `"English Village"`, `"Saunders"`, `"Palmyra"`, `"Advertising Copywriter"`.
   - Deceased people are unchanged apart from `living: false`.
-  - `report.living===4`, `report.livingWithDeathRecord===1` (I11), `report.bornAfter1925UpTo1940NoDeath` has exactly I9 (named).
+  - `report.living===4`, `report.livingWithDeathRecord===1` (I11), `report.bornAfter1925UpTo1940NoDeath` has exactly I9 and I10 (both named; I10 was born 1940 with no death record).
   - Output objects are built from an explicit whitelist: a raw individual with an extra field `secretNote` produces output without it.
 - [ ] **Step 2: Run**; expect FAIL.
 - [ ] **Step 3: Implement** `sanitize` (whitelist copy, never spread) and `sanitizeFile` (read, apply `data/overrides.json`, write, return report). `scripts/sanitize.ts` takes the raw path as its argument, writes `data/family.public.json`, and prints the report: counts plus the id and name of each person born 1926–1940 with no death record.
