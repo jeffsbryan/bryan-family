@@ -14,7 +14,17 @@ function depthOf(node: TreeNode): number {
   return node.parents.length ? 1 + Math.max(...node.parents.map(depthOf)) : 0;
 }
 
-function Ancestors({ nodes, levels, childName }: { nodes: TreeNode[]; levels: number; childName: string }) {
+function Ancestors({
+  nodes,
+  levels,
+  childName,
+  depth = 1,
+}: {
+  nodes: TreeNode[];
+  levels: number;
+  childName: string;
+  depth?: number;
+}) {
   return (
     <ul className="tree-parents" aria-label={`Parents of ${childName}`}>
       {nodes.map((n) => {
@@ -23,7 +33,10 @@ function Ancestors({ nodes, levels, childName }: { nodes: TreeNode[]; levels: nu
           <li key={n.person.id} className={n.parents.length ? 'tree-node has-parents' : 'tree-node'}>
             <TreeCard person={n.person} hasMoreAncestors={n.hasMoreAncestors} />
             {n.parents.length ? (
-              <Ancestors nodes={n.parents} levels={above} childName={n.person.name} />
+              <>
+                <h3 className="tree-gp-label">{depth === 1 ? 'Grandparents' : 'Earlier ancestors'}</h3>
+                <Ancestors nodes={n.parents} levels={above} childName={n.person.name} depth={depth + 1} />
+              </>
             ) : above > 0 ? (
               <div className="tree-ghost" aria-hidden="true" style={{ '--g': above } as CSSProperties} />
             ) : null}
@@ -68,7 +81,6 @@ function TreeBody({ view }: { view: TreeView }) {
             <>
               <section className="tree-anc">
                 <h2 className="tree-h">Parents</h2>
-                {levels >= 2 ? <h3 className="sr-only">Grandparents</h3> : null}
                 <Ancestors nodes={root.parents} levels={levels} childName={root.person.name} />
               </section>
               <div className="tree-conn" aria-hidden="true" />

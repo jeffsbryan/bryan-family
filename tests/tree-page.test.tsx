@@ -1,7 +1,7 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, render, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import raw from './fixtures/raw-mini.json';
-import type { PublicFile, PublicPerson, RawFile } from '../src/shared/types';
+import type { PublicFile, RawFile } from '../src/shared/types';
 import { sanitize } from '../scripts/lib/sanitize';
 
 const graph = vi.hoisted(() => ({
@@ -34,10 +34,6 @@ beforeEach(() => {
   document.title = '';
 });
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
 const hrefs = (name: string | RegExp) => screen.getAllByRole('link', { name }).map((a) => a.getAttribute('href'));
 
 describe('TreePage', () => {
@@ -47,6 +43,9 @@ describe('TreePage', () => {
       expect(await screen.findByRole('heading', { name: h })).toBeInTheDocument();
     }
     expect(document.title).toBe('Hayden Gitt Bryan · Family tree · Bryan Family Tree');
+    const label = screen.getByRole('heading', { name: 'Grandparents' });
+    expect(label.className).toContain('tree-gp-label');
+    expect(label.classList.contains('sr-only')).toBe(false);
   });
 
   it('links each card to its own tree and each Details link to the person page', async () => {
@@ -83,30 +82,19 @@ describe('TreePage', () => {
     expect(card.textContent).not.toMatch(/\d{4}/);
   });
 
-  it('shows an arrow where a shallow ancestor has more ancestors', async () => {
-    const family = await import('../src/data/family');
-    const spy = vi.spyOn(family, 'getTreeView');
-    const p = (id: string) => graph.people.get(id) as PublicPerson;
-    spy.mockResolvedValue({
-      root: {
-        person: p('I2'),
-        hasMoreAncestors: false,
-        parents: [
-          { person: p('I4'), parents: [], hasMoreAncestors: true },
-          { person: p('I5'), parents: [], hasMoreAncestors: false },
-        ],
-      },
-      spouses: [],
-      children: [],
-    });
+  it('shows an arrow where an ancestor has more ancestors beyond the shown levels', async () => {
+    // Add a great-grandfather above I6 so I6 (a grandparent) has parents that are not shown.
+    const i6 = graph.people.get('I6') as { childOfFamilies: string[] };
+    i6.childOfFamilies = ['FX'];
+    graph.people.set('IX', { id: 'IX', name: 'Great Grand', living: false, events: [], childOfFamilies: [], spouseOfFamilies: ['FX'] });
+    graph.families.set('FX', { id: 'FX', children: ['I6'], husband: 'IX' });
     render(<TreePage id="I2" />);
     await screen.findByRole('heading', { name: 'Parents' });
-    expect(screen.queryByRole('heading', { name: 'Grandparents' })).toBeNull();
-    const oliver = screen.getByRole('link', { name: /^More ancestors Oliver Bryan/ });
-    expect(within(oliver).getByText('More ancestors')).toBeInTheDocument();
-    expect(oliver.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
-    // Bessie has no parents so gets no arrow
-    expect(within(screen.getByRole('link', { name: /^Bessie Ida Gitt/ })).queryByText('More ancestors')).toBeNull();
+    const benjamin = screen.getByRole('link', { name: /^More ancestors Benjamin Sherman Bryan/ });
+    expect(within(benjamin).getByText('More ancestors')).toBeInTheDocument();
+    expect(benjamin.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    expect(screen.queryByRole('link', { name: /Great Grand/ })).toBeNull();
+    expect(screen.getAllByText('More ancestors')).toHaveLength(1);
   });
 
   it('shows no parent or child headings for a person with no families', async () => {
@@ -154,9 +142,13 @@ describe('TreePage', () => {
     const { rerender } = render(<TreePage id="I2" />);
     rerender(<TreePage id="I8" />);
     expect(await screen.findByRole('link', { name: 'Details for Mary' })).toBeInTheDocument();
-    release();
-    await new Promise((r) => setTimeout(r, 20));
-    await waitFor(() => expect(screen.queryByRole('link', { name: 'Details for Hayden Gitt Bryan' })).toBeNull());
+    expect(document.title).toBe('Mary · Family tree · Bryan Family Tree');
+    await act(async () => {
+      release();
+      for (let i = 0; i < 20; i++) await Promise.resolve();
+    });
+    expect(screen.getByRole('link', { name: 'Details for Mary' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Details for Hayden Gitt Bryan' })).toBeNull();
     expect(document.title).toBe('Mary · Family tree · Bryan Family Tree');
   });
 });
