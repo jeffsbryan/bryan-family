@@ -3,6 +3,7 @@ import { Layout } from './components/Layout';
 import { parseHash } from './lib/route';
 import { Home } from './pages/Home';
 import { NotFound } from './pages/NotFound';
+import { PersonPage } from './pages/PersonPage';
 import { SurnamePage } from './pages/SurnamePage';
 
 /** Placeholder until the person and tree pages are built. */
@@ -27,7 +28,9 @@ export function App() {
         <Home />
       ) : route.name === 'surname' ? (
         <SurnamePage surname={route.surname} />
-      ) : route.name === 'person' || route.name === 'tree' ? (
+      ) : route.name === 'person' ? (
+        <PersonPage id={route.id} />
+      ) : route.name === 'tree' ? (
         <PendingPage />
       ) : (
         <NotFound />

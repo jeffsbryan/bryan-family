@@ -121,7 +121,7 @@ describe('SurnamePage', () => {
 
 describe('App routing', () => {
   it('renders pending and not found routes', async () => {
-    window.location.hash = '#/person/I1';
+    window.location.hash = '#/tree/I1';
     render(<App />);
     expect(screen.getByRole('heading', { name: 'Coming soon' })).toBeInTheDocument();
     await act(async () => {
