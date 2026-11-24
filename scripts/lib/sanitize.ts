@@ -39,6 +39,27 @@ export function validateOverrides(overrides: unknown, ids: Iterable<string>): Ov
   return overrides as Overrides;
 }
 
+/** The only fields the sanitizer ever writes. checkPublicFile rejects anything else. */
+export const EVENT_FIELDS = ['type', 'label', 'date', 'year', 'month', 'day', 'place', 'value'] as const;
+export const PERSON_FIELDS = [
+  'id', 'name', 'givenName', 'surname', 'sex', 'events', 'childOfFamilies', 'spouseOfFamilies', 'living', 'occupation',
+] as const;
+export const FAMILY_FIELDS = ['id', 'husband', 'wife', 'children', 'marriage', 'divorce'] as const;
+
+/** Throws (naming the person id, never the value) when a BIRT, DEAT, BAPM or CHR year is present but not a finite number. */
+function assertNumericYears(raw: RawFile): void {
+  for (const i of raw.individuals) {
+    for (const e of i.events) {
+      if (e.type !== 'BIRT' && e.type !== 'DEAT' && e.type !== 'BAPM' && e.type !== 'CHR') continue;
+      const y: unknown = e.year;
+      if (y === undefined || y === null) continue;
+      if (typeof y !== 'number' || !Number.isFinite(y)) {
+        throw new Error(`Invalid ${e.type} year for ${i.id}: not a number`);
+      }
+    }
+  }
+}
+
 // Every output object is built field by field. Never spread an input object.
 function copyEvent(e: RawEvent): RawEvent {
   const out: RawEvent = { type: e.type, label: e.label };
@@ -103,6 +124,7 @@ export function sanitize(
   overrides: Overrides,
   cutoff: number = LIVING_AFTER_YEAR,
 ): { file: PublicFile; report: SanitizeReport } {
+  assertNumericYears(raw);
   const livingIds = new Set<string>();
   const report: SanitizeReport = {
     living: 0,

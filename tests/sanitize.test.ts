@@ -153,3 +153,24 @@ describe('noBirthYearRecentEvidence', () => {
     expect(f.individuals.every((i) => i.living === false)).toBe(true);
   });
 });
+
+describe('sanitize rejects non-numeric years', () => {
+  const withYear = (type: string, year: unknown): RawFile => {
+    const c = clone();
+    c.individuals.find((i) => i.id === 'I4')!.events.push({ type, label: type, year: year as number });
+    return c;
+  };
+  for (const type of ['BIRT', 'DEAT', 'BAPM', 'CHR']) {
+    it(`throws naming the person for a string ${type} year, without the value`, () => {
+      expect(() => sanitize(withYear(type, '1950x'), {})).toThrow(/I4/);
+      expect(() => sanitize(withYear(type, '1950x'), {})).not.toThrow(/1950x/);
+    });
+  }
+  it('throws for a NaN year', () => {
+    expect(() => sanitize(withYear('BIRT', NaN), {})).toThrow(/I4/);
+  });
+  it('does not throw for other event types or numeric years', () => {
+    expect(() => sanitize(withYear('RESI', 'abc'), {})).not.toThrow();
+    expect(() => sanitize(rawFile, {})).not.toThrow();
+  });
+});
