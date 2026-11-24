@@ -68,6 +68,62 @@ describe('findLeaks', () => {
   });
 });
 
+describe('findLeaks precision', () => {
+  const mk = (livingEvents: object[], deadEvents: object[] = []): RawFile => ({
+    format: 'x',
+    individuals: [
+      {
+        id: 'L1', name: 'Zed Livingman', givenName: 'Zed', surname: 'Livingman', sex: 'M',
+        events: [{ type: 'BIRT', label: 'Born', year: 1960 }, ...livingEvents] as RawFile['individuals'][0]['events'],
+        childOfFamilies: [], spouseOfFamilies: [],
+      },
+      {
+        id: 'D1', name: 'Old Person', givenName: 'Old', surname: 'Person', sex: 'F',
+        events: [{ type: 'BIRT', label: 'Born', year: 1900 }, ...deadEvents] as RawFile['individuals'][0]['events'],
+        childOfFamilies: [], spouseOfFamilies: [],
+      },
+    ],
+    families: [],
+  });
+  const scan = (r: RawFile, name: string, content: string) => {
+    const d = tmp();
+    writeFileSync(join(d, name), content);
+    return findLeaks(collectSensitiveStrings(r, {}), [d]);
+  };
+
+  it('a living "1950" is not a leak inside a deceased "5 MAR 1950"', () => {
+    const r = mk([{ type: 'RESI', label: 'Resided', date: '1950' }], [{ type: 'RESI', label: 'Resided', date: '5 MAR 1950' }]);
+    expect(scan(r, 'out.json', JSON.stringify({ d: '5 MAR 1950' }))).toEqual([]);
+  });
+
+  it('a living place equal to a whole JSON string value is a leak', () => {
+    const r = mk([{ type: 'RESI', label: 'Resided', place: 'Hidden Hollow' }]);
+    const leaks = scan(r, 'out.json', JSON.stringify({ a: [{ place: 'Hidden Hollow' }] }));
+    expect(leaks.map((l) => l.match)).toEqual(['Hidden Hollow']);
+  });
+
+  it('a living place only inside a longer deceased string is not a leak', () => {
+    const r = mk([{ type: 'RESI', label: 'Resided', place: 'Hidden Hollow' }], [{ type: 'RESI', label: 'Resided', place: 'Hidden Hollow, Ohio' }]);
+    expect(scan(r, 'out.json', JSON.stringify({ p: 'Hidden Hollow, Ohio' }))).toEqual([]);
+    const r2 = mk([{ type: 'RESI', label: 'Resided', place: 'Hidden Hollow' }]);
+    expect(scan(r2, 'out.json', JSON.stringify({ p: 'Near Hidden Hollow, Ohio' }))).toEqual([]);
+  });
+
+  it('short strings are not flagged in a bundle .js but long ones are', () => {
+    const r = mk([
+      { type: 'RESI', label: 'Resided', place: 'Reno' },
+      { type: 'RESI', label: 'Resided', place: 'Twelve Chars' },
+    ]);
+    expect(scan(r, 'bundle.js', 'var a="Reno, Nevada";').map((l) => l.match)).toEqual([]);
+    expect(scan(r, 'bundle.js', 'var a="Twelve Chars";').map((l) => l.match)).toEqual(['Twelve Chars']);
+  });
+
+  it('purely numeric strings are not substring-matched in non-JSON files', () => {
+    const r = mk([{ type: 'RESI', label: 'Resided', date: '19500101' }]);
+    expect(scan(r, 'bundle.js', 'const x=19500101;')).toEqual([]);
+  });
+});
+
 describe('collectSensitiveStrings expansion and exclusion count', () => {
   const mk = (places: string[], deadPlaces: string[] = []): RawFile => ({
     format: 'x',

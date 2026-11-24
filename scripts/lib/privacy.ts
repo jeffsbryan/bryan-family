@@ -89,12 +89,50 @@ export function listFiles(dirs: string[]): string[] {
   return files;
 }
 
+/** Substring scanning of non-JSON files ignores short or purely numeric/punctuation strings (too many false hits). */
+export const MIN_SUBSTRING_LENGTH = 6;
+const isDigitsOrPunctuation = (s: string): boolean => /^[\p{N}\p{P}\p{S}\s]*$/u.test(s);
+
+function forEachString(value: unknown, visit: (s: string) => void): void {
+  if (typeof value === 'string') visit(value);
+  else if (Array.isArray(value)) for (const v of value) forEachString(v, visit);
+  else if (value !== null && typeof value === 'object') for (const v of Object.values(value)) forEachString(v, visit);
+}
+
+/**
+ * Parsed `.json` files are compared value by value for exact equality, so a living person's
+ * "1950" does not match a deceased person's "5 MAR 1950". Other files (and `.json` files that
+ * do not parse) are scanned for substrings, but only strings of 6+ characters that are not
+ * purely digits and punctuation.
+ */
 export function findLeaks(sensitive: string[], dirs: string[]): { file: string; match: string }[] {
+  const exact = new Set(sensitive);
+  const substrings = sensitive.filter((s) => s.length >= MIN_SUBSTRING_LENGTH && !isDigitsOrPunctuation(s));
   const leaks: { file: string; match: string }[] = [];
   for (const file of listFiles(dirs)) {
     const text = readFileSync(file, 'utf8');
-    for (const match of sensitive) {
-      if (text.includes(match)) leaks.push({ file, match });
+    let parsed: unknown;
+    let isJson = false;
+    if (file.endsWith('.json')) {
+      try {
+        parsed = JSON.parse(text);
+        isJson = true;
+      } catch {
+        isJson = false;
+      }
+    }
+    if (isJson) {
+      const hits = new Set<string>();
+      forEachString(parsed, (v) => {
+        if (exact.has(v)) hits.add(v);
+        else {
+          const nfc = v.normalize('NFC');
+          if (exact.has(nfc)) hits.add(nfc);
+        }
+      });
+      for (const match of hits) leaks.push({ file, match });
+    } else {
+      for (const match of substrings) if (text.includes(match)) leaks.push({ file, match });
     }
   }
   return leaks;
