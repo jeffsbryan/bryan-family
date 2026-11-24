@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Overrides, RawFile } from '../src/shared/types';
-import { collectSensitiveStrings, findLeaks, listFiles } from './lib/privacy';
+import { collectSensitive, findLeaks, listFiles } from './lib/privacy';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const rawPath = process.argv[2];
@@ -21,12 +21,15 @@ const raw = JSON.parse(readFileSync(rawPath, 'utf8')) as RawFile;
 const overridesPath = join(root, 'data', 'overrides.json');
 const overrides = (existsSync(overridesPath) ? JSON.parse(readFileSync(overridesPath, 'utf8')) : {}) as Overrides;
 
-const sensitive = collectSensitiveStrings(raw, overrides);
+const { strings: sensitive, excludedCount } = collectSensitive(raw, overrides);
 const scanned = listFiles(dirs).length;
 const leaks = findLeaks(sensitive, dirs);
 
 console.log(`Sensitive strings checked: ${sensitive.length}`);
 console.log(`Files scanned: ${scanned}`);
+console.log(
+  `${excludedCount} strings skipped because deceased people share them (a living person's detail published under one of those strings would not be detected)`,
+);
 for (const l of leaks) {
   const m = l.match.length > 40 ? l.match.slice(0, 40) : l.match;
   console.log(`${l.file}: "${m}"`);

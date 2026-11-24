@@ -16,7 +16,9 @@ Edge cases can be settled by hand in `data/overrides.json`, as `{"I123": "living
 2. Run `npm run sanitize -- data/raw/<file>.json`.
 3. Review the printed lists: people born 1926-1940 with no death record, and people with no birth year but recent evidence. Add any needed entries to `data/overrides.json` and re-run step 2.
 4. Run `npm run build:data && npm run build`.
-5. Run `npm run verify:privacy -- data/raw/<file>.json`. It scans `dist/` and `public/data/` for any place, date, occupation or event text belonging to living people, and exits 1 if it finds any.
+5. Run `npm run verify:privacy -- data/raw/<file>.json`. It scans `dist/` and `public/data/` for any place, date, occupation or event text belonging to living people, and exits 1 if it finds any. It also matches normalized, JSON-escaped and Unicode-NFC forms of each string.
+
+   Limitation: a place or date shared with a deceased person (a common town, say) is skipped, or the check would flag every file. The tool prints how many strings were skipped. A living person's detail published under one of those shared strings would not be detected, so spot-check living people's pages by hand.
 6. Commit `data/family.public.json` (and `data/overrides.json` if changed), then push. Amplify rebuilds and deploys.
 
 ## Development

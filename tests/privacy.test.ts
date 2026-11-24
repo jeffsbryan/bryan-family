@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { sanitize } from '../scripts/lib/sanitize';
 import { buildData } from '../scripts/lib/build-data';
-import { collectSensitiveStrings, findLeaks } from '../scripts/lib/privacy';
+import { collectSensitive, collectSensitiveStrings, findLeaks } from '../scripts/lib/privacy';
 
 const rawFile = raw as RawFile;
 const tmp = () => mkdtempSync(join(tmpdir(), 'privacy-'));
@@ -65,5 +65,66 @@ describe('findLeaks', () => {
     writeFileSync(join(d, 'raw.json'), JSON.stringify(rawFile));
     const s = collectSensitiveStrings(rawFile, {});
     expect(findLeaks(s, [d]).length).toBeGreaterThan(0);
+  });
+});
+
+describe('collectSensitiveStrings expansion and exclusion count', () => {
+  const mk = (places: string[], deadPlaces: string[] = []): RawFile => ({
+    format: 'x',
+    individuals: [
+      {
+        id: 'L1', name: 'Zed Livingman', givenName: 'Zed', surname: 'Livingman', sex: 'M',
+        events: [
+          { type: 'BIRT', label: 'Born', year: 1960 },
+          ...places.map((place) => ({ type: 'RESI', label: 'Resided', place })),
+        ],
+        childOfFamilies: [], spouseOfFamilies: [],
+      },
+      {
+        id: 'D1', name: 'Old Person', givenName: 'Old', surname: 'Person', sex: 'F',
+        events: [
+          { type: 'BIRT', label: 'Born', year: 1900 },
+          ...deadPlaces.map((place) => ({ type: 'RESI', label: 'Resided', place })),
+        ],
+        childOfFamilies: [], spouseOfFamilies: [],
+      },
+    ],
+    families: [],
+  });
+  const leakIn = (raw: RawFile, content: string) => {
+    const d = tmp();
+    writeFileSync(join(d, 'out.json'), content);
+    return findLeaks(collectSensitiveStrings(raw, {}), [d]);
+  };
+
+  it('detects normalized form of "Scranton PA, USA"', () => {
+    expect(leakIn(mk(['Scranton PA, USA']), '{"p":"Scranton PA"}').length).toBeGreaterThan(0);
+  });
+
+  it('detects JSON-escaped form of a place with quotes', () => {
+    const place = 'Café "X"';
+    expect(leakIn(mk([place]), JSON.stringify({ p: place })).length).toBeGreaterThan(0);
+  });
+
+  it('detects NFC form of an NFD place', () => {
+    const nfd = 'Café Town';
+    expect(leakIn(mk([nfd]), 'Café Town').length).toBeGreaterThan(0);
+  });
+
+  it('detects collapsed form of a double-spaced place', () => {
+    expect(leakIn(mk(['Old  Mill  Rd']), 'Old Mill Rd').length).toBeGreaterThan(0);
+  });
+
+  it('does not flag a living person name', () => {
+    expect(leakIn(mk(['Hidden Place']), 'Zed Livingman Zed Livingman').length).toBe(0);
+  });
+
+  it('counts strings skipped because deceased people share them', () => {
+    const none = collectSensitive(mk(['Hidden Place', 'Shared Town']), {});
+    expect(none.excludedCount).toBe(0);
+    const r = collectSensitive(mk(['Hidden Place', 'Shared Town'], ['Shared Town']), {});
+    expect(r.excludedCount).toBe(1);
+    expect(r.strings).toContain('Hidden Place');
+    expect(r.strings).not.toContain('Shared Town');
   });
 });
