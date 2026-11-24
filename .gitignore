@@ -1,0 +1,7 @@
+.superpowers/
+node_modules/
+dist/
+public/data/
+data/raw/
+*.ged
+Bryan_*.json
