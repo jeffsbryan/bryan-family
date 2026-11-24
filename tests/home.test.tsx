@@ -69,6 +69,38 @@ describe('SearchBox', () => {
   });
 });
 
+describe('SearchBox errors', () => {
+  const ERR = 'Search is unavailable right now. Please try again.';
+  it('shows an error, not No one found, and clears it on a later success', async () => {
+    vi.mocked(api.searchPeople)
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValueOnce([['I1', 'Ada Hayden', 1870, 1931, false]]);
+    render(<SearchBox />);
+    const input = screen.getByLabelText('Search for a person');
+    fireEvent.change(input, { target: { value: 'hay' } });
+    expect(await screen.findByText(ERR)).toBeInTheDocument();
+    expect(screen.queryByText('No one found')).not.toBeInTheDocument();
+    fireEvent.change(input, { target: { value: 'hayd' } });
+    expect(await screen.findByRole('link', { name: 'Ada Hayden' })).toBeInTheDocument();
+    expect(screen.queryByText(ERR)).not.toBeInTheDocument();
+  });
+
+  it('ignores a stale rejection', async () => {
+    let rejectFirst!: (e: Error) => void;
+    vi.mocked(api.searchPeople)
+      .mockImplementationOnce(() => new Promise((_, rej) => (rejectFirst = rej)))
+      .mockResolvedValueOnce([['I2', 'Second Result', 1900, 1950, false]]);
+    render(<SearchBox />);
+    const input = screen.getByLabelText('Search for a person');
+    fireEvent.change(input, { target: { value: 'fi' } });
+    fireEvent.change(input, { target: { value: 'sec' } });
+    await screen.findByRole('link', { name: 'Second Result' });
+    await act(async () => rejectFirst(new Error('late')));
+    expect(screen.queryByText(ERR)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Second Result' })).toBeInTheDocument();
+  });
+});
+
 describe('SurnamePage', () => {
   it('lists matching people sorted by name', async () => {
     vi.mocked(api.loadShard).mockResolvedValue([

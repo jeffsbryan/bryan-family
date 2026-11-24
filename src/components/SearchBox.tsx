@@ -5,7 +5,7 @@ import { PersonLink } from './PersonLink';
 
 export function SearchBox() {
   const [query, setQuery] = useState('');
-  const [done, setDone] = useState<{ query: string; results: SearchEntry[] }>({ query: '', results: [] });
+  const [done, setDone] = useState<{ query: string; results: SearchEntry[]; error?: boolean }>({ query: '', results: [] });
   const latest = useRef(0);
 
   function onChange(value: string) {
@@ -20,7 +20,7 @@ export function SearchBox() {
         if (ticket === latest.current) setDone({ query: value, results: r });
       })
       .catch(() => {
-        if (ticket === latest.current) setDone({ query: value, results: [] });
+        if (ticket === latest.current) setDone({ query: value, results: [], error: true });
       });
   }
 
@@ -37,7 +37,12 @@ export function SearchBox() {
         value={query}
         onChange={(e) => onChange(e.target.value)}
       />
-      {active && done.query === query && results.length === 0 && <p className="results-empty">No one found</p>}
+      {active && done.query === query && done.error && (
+        <p className="results-empty" role="alert">
+          Search is unavailable right now. Please try again.
+        </p>
+      )}
+      {active && done.query === query && !done.error && results.length === 0 && <p className="results-empty">No one found</p>}
       {results.length > 0 && (
         <ul className="results">
           {results.map(([id, name, born, died, living]) => {
