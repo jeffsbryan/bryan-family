@@ -21,6 +21,8 @@ function load<T, N>(path: string, notFound: N): Promise<T | N> {
     }
     if (res.status === 404) return notFound;
     if (!res.ok) throw new Error(`Failed to fetch ${u}: HTTP ${res.status}`);
+    // A host that rewrites unknown paths to index.html answers 200 with HTML: treat it as a 404.
+    if (res.headers.get('content-type')?.includes('text/html')) return notFound;
     try {
       return (await res.json()) as T;
     } catch {
@@ -83,6 +85,9 @@ export function matchEntries(entries: SearchEntry[], query: string): SearchEntry
 export async function searchPeople(query: string, limit = 25): Promise<SearchEntry[]> {
   const tokens = tokenize(query);
   if (tokens.length === 0 || tokens[0].length < 2) return [];
-  const shard = await loadShard(shardKey(tokens[0]));
+  const key = shardKey(tokens[0]);
+  const { shardKeys } = await getManifest();
+  if (Array.isArray(shardKeys) && !shardKeys.includes(key)) return [];
+  const shard = await loadShard(key);
   return matchEntries(shard, query).slice(0, limit);
 }

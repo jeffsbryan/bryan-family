@@ -32,3 +32,7 @@ Search matches the start of a first name or surname. Limits:
 - Queries should start with a first name or surname.
 - Middle names on their own are not indexed.
 - Later words of multi-word surnames are not indexed.
+
+## Hosting note
+
+Do not add a catch-all rewrite rule (a 404 rewritten to `index.html`) to the Amplify app. Hash routes need none. The data client treats an HTML response with status 200 as a missing file, and search skips shards that are not listed in `manifest.json`, but a rewrite rule would still hide real errors.

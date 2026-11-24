@@ -67,4 +67,6 @@ export interface Manifest {
   familyCount: number;
   bucketCount: number;
   topSurnames: { surname: string; count: number }[];
+  /** Sorted keys of the search shards that exist (search/<key>.json). */
+  shardKeys: string[];
 }

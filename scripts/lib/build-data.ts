@@ -64,6 +64,7 @@ export function buildData(pub: PublicFile, now: Date = new Date()): Map<string, 
     familyCount: pub.families.length,
     bucketCount: BUCKET_COUNT,
     topSurnames,
+    shardKeys: [...shards.keys()].sort(),
   };
   out.set('manifest.json', manifest);
   for (const [n, v] of people) out.set(`people/${n}.json`, v);

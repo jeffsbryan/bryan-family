@@ -47,6 +47,13 @@ describe('getPerson / getFamily / getManifest', () => {
     expect(await api.getFamily('F198')).toBeUndefined();
   });
 
+  it('treats a 200 text/html response as not found, never parsing it', async () => {
+    stub({
+      'people/4.json': () => new Response('<!doctype html><html></html>', { status: 200, headers: { 'content-type': 'text/html; charset=utf-8' } }),
+    });
+    expect(await api.getPerson('I4')).toBeUndefined();
+  });
+
   it('loads the manifest', async () => {
     expect((await api.getManifest()).bucketCount).toBe(200);
   });
@@ -108,7 +115,7 @@ describe('searchPeople', () => {
   it('loads only the matching shard', async () => {
     const r = await api.searchPeople('hay');
     expect(r.some((x) => x[0] === 'I2')).toBe(true);
-    expect(paths()).toEqual(['search/ha.json']);
+    expect(paths()).toEqual(['manifest.json', 'search/ha.json']);
   });
 
   it('finds the blank-surname person by given name', async () => {
@@ -122,7 +129,19 @@ describe('searchPeople', () => {
     expect(await api.searchPeople('bryan', 1)).toHaveLength(1);
   });
 
-  it('treats a missing shard as empty', async () => {
+  it('makes no shard request when the shard key is not in the manifest', async () => {
     expect(await api.searchPeople('zzzz')).toEqual([]);
+    expect(paths()).toEqual(['manifest.json']);
+  });
+
+  it('still treats a listed but missing shard as empty', async () => {
+    stub({ 'search/ha.json': () => new Response('nope', { status: 404 }) });
+    api = await import('../src/data/api');
+    expect(await api.searchPeople('hay')).toEqual([]);
+  });
+
+  it('a manifest failure surfaces as an error', async () => {
+    stub({ 'manifest.json': () => new Response('x', { status: 500 }) });
+    await expect(api.searchPeople('hay')).rejects.toThrow(/manifest\.json/);
   });
 });

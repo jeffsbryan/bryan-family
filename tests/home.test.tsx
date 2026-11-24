@@ -10,7 +10,7 @@ vi.mock('../src/data/api');
 
 const manifest = {
   generatedAt: '2026-01-01', personCount: 27981, familyCount: 12510, bucketCount: 200,
-  topSurnames: [{ surname: 'Bryan', count: 221 }, { surname: 'Hayden', count: 140 }],
+  topSurnames: [{ surname: 'Bryan', count: 221 }, { surname: 'Hayden', count: 140 }], shardKeys: ['br', 'ha'],
 };
 
 beforeEach(() => {

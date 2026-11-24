@@ -80,6 +80,9 @@ describe('buildData', () => {
     expect(m.personCount).toBe(pub.individuals.length);
     expect(m.familyCount).toBe(pub.families.length);
     expect(m.topSurnames[0].surname).toBe('Bryan');
+    const keys = [...out.keys()].filter((p) => p.startsWith('search/')).map((p) => p.slice(7, -5));
+    expect(m.shardKeys).toEqual(keys.sort());
+    expect(m.shardKeys).toContain('br');
     expect(m.topSurnames.every((s) => s.surname.trim() !== '')).toBe(true);
     expect(m.topSurnames.length).toBeLessThanOrEqual(30);
     expect(JSON.stringify(m)).not.toContain('"surname":""');
