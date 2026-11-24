@@ -120,10 +120,13 @@ describe('SurnamePage', () => {
 });
 
 describe('App routing', () => {
-  it('renders pending and not found routes', async () => {
-    window.location.hash = '#/tree/I1';
+  it('renders tree and not found routes', async () => {
+    vi.mocked(api.getPerson).mockResolvedValue({
+      id: 'I8', name: 'Mary', sex: 'F', living: false, events: [], childOfFamilies: [], spouseOfFamilies: [],
+    } as never);
+    window.location.hash = '#/tree/I8';
     render(<App />);
-    expect(screen.getByRole('heading', { name: 'Coming soon' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Walking the tree' })).toBeInTheDocument();
     await act(async () => {
       window.location.hash = '#/nonsense';
       window.dispatchEvent(new HashChangeEvent('hashchange'));

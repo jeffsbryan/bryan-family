@@ -6,6 +6,7 @@
   --line: #CAD5D1;
   --accent: #1D5B55;
   --tint: #E8EFEC;
+  --tree-line: #9FB0AB;
   --font-serif: Newsreader, Georgia, serif;
   --font-sans: Inter, system-ui, sans-serif;
   color-scheme: light dark;
@@ -20,5 +21,6 @@
     --line: #2C3B37;
     --accent: #6FBFB5;
     --tint: #1C2825;
+    --tree-line: #587069;
   }
 }

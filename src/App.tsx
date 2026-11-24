@@ -5,11 +5,7 @@ import { Home } from './pages/Home';
 import { NotFound } from './pages/NotFound';
 import { PersonPage } from './pages/PersonPage';
 import { SurnamePage } from './pages/SurnamePage';
-
-/** Placeholder until the person and tree pages are built. */
-function PendingPage() {
-  return <h1 className="title">Coming soon</h1>;
-}
+import { TreePage } from './pages/TreePage';
 
 export function App() {
   const [route, setRoute] = useState(() => parseHash(window.location.hash));
@@ -31,7 +27,7 @@ export function App() {
       ) : route.name === 'person' ? (
         <PersonPage id={route.id} />
       ) : route.name === 'tree' ? (
-        <PendingPage />
+        <TreePage id={route.id} />
       ) : (
         <NotFound />
       )}

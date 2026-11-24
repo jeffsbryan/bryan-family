@@ -121,3 +121,140 @@ a:focus-visible, input:focus-visible {
   color: var(--card); text-decoration: none; font-weight: 600; text-align: center;
 }
 .button-link:focus-visible { outline-color: var(--ink); }
+
+/* Tree page */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.tree-title { font-size: 32px; }
+.tree-lede { font-size: 15px; }
+.tree { container-type: inline-size; --c: 190px; --cs: 210px; --line-w: 1.5px; }
+@supports (width: 1cqw) {
+  .tree { --c: calc((100cqw - 96px) / 4.1); --cs: calc(var(--c) * 1.1); }
+}
+.tree-colheads { display: none; }
+.tree ul { list-style: none; margin: 0; padding: 0; }
+.tree-h, .tree-spouse-label {
+  margin: 0 0 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600;
+}
+.tree-conn { display: none; }
+.tree-body > section { margin-bottom: 24px; }
+.tree-body > section:last-child { margin-bottom: 0; }
+
+.tree-card {
+  display: flex; align-items: stretch; width: 100%; min-height: 72px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--card); overflow: hidden;
+}
+.tree-card:hover { border-color: var(--accent); }
+.tree-card-main {
+  flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px; color: var(--ink); text-decoration: none;
+}
+.tree-card-text { display: flex; flex-direction: column; min-width: 0; }
+.tree-card-name { font-family: var(--font-serif); font-size: 16px; font-weight: 600; line-height: 1.2; }
+.tree-card-sub { font-size: 13px; color: var(--muted); }
+.tree-more { display: inline-flex; flex: none; color: var(--muted); }
+.tree-card-details {
+  flex: none; display: flex; align-items: center; justify-content: center;
+  min-width: 56px; min-height: 44px; padding: 0 8px;
+  border-left: 1px solid var(--line); color: var(--accent); font-size: 13px; font-weight: 600; text-decoration: none;
+}
+.tree-card-details:hover { text-decoration: underline; }
+.tree-card-main:focus-visible, .tree-card-details:focus-visible { outline-offset: -4px; }
+.tree-card.is-living { border: 1.5px dashed var(--tree-line); background: var(--tint); }
+.tree-card.is-living .tree-card-name { font-family: var(--font-sans); font-size: 15px; }
+.tree-card.is-selected { border-color: var(--accent); background: var(--accent); }
+.tree-card.is-selected .tree-card-main { color: var(--card); }
+.tree-card.is-selected .tree-card-name { font-size: 18px; }
+.tree-card.is-selected .tree-card-sub, .tree-card.is-selected .tree-card-details { color: var(--card); }
+.tree-card.is-selected .tree-card-details { border-left-color: var(--card); }
+.tree-card.is-selected a:focus-visible { outline-color: var(--card); }
+
+.tree-spouses { margin-top: 12px; }
+.tree-spouse-list { display: flex; flex-direction: column; gap: 8px; }
+.tree-spouse {
+  display: flex; flex-direction: column; justify-content: center; min-height: 44px; padding: 8px 14px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--card); text-decoration: none; color: var(--ink);
+}
+.tree-spouse:hover { border-color: var(--accent); }
+.tree-spouse-name { font-family: var(--font-serif); font-size: 15px; font-weight: 600; }
+
+/* Stacked layout (below 900px): parents, selected, spouses, children, no connectors */
+.tree-parents .tree-parents {
+  margin: 8px 0 0 12px; padding-left: 12px; border-left: 2px solid var(--line);
+}
+.tree-node { padding-block: 6px; }
+.tree-ghost { display: none; }
+.tree-chevron { transform: rotate(90deg); }
+.tree-kid { padding-block: 6px; }
+.tree-body > section > .tree-h { display: block; }
+
+@media (min-width: 900px) {
+  .page:has(.tree) { max-width: none; align-items: center; }
+  .page:has(.tree) > * { width: min(1000px, calc(100vw - 48px)); }
+  .tree-colheads {
+    display: flex; gap: 32px; margin-bottom: 12px;
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  .tree-colhead { flex: none; width: var(--c); }
+  .tree-colhead.is-sel { width: var(--cs); }
+  .tree-body { display: flex; align-items: center; padding-bottom: calc(var(--spouses) * 68px + 12px); }
+  .tree-body > section { margin-bottom: 0; }
+  .tree-body .tree-h { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: -1px; }
+  .tree-conn { display: block; flex: none; width: 16px; height: var(--line-w); background: var(--tree-line); }
+  .tree-card { width: var(--c); }
+  .tree-sel { position: relative; flex: none; width: var(--cs); }
+  .tree-sel .tree-card { width: var(--cs); }
+  .tree-spouses { position: absolute; top: 100%; left: 0; width: 100%; }
+  .tree-spouse-label { margin-bottom: 4px; }
+
+  .tree-anc { flex: none; }
+  .tree-parents .tree-parents { margin: 0; padding: 0; border: 0; order: 1; }
+  .tree-node {
+    display: flex; align-items: center; padding-block: 8px;
+  }
+  .tree-node > .tree-card { order: 3; flex: none; }
+  .tree-node > .tree-ghost { display: block; order: 1; flex: none; width: calc(var(--g) * (var(--c) + 32px)); height: 1px; }
+  .tree-node.has-parents::before {
+    content: ''; order: 2; flex: none; width: 16px; height: var(--line-w); background: var(--tree-line);
+  }
+  .tree-chevron { transform: none; }
+
+  /* bracket tick on the right of each ancestor card, joined to its siblings */
+  .tree-node::after, .tree-kid::before {
+    content: ''; flex: none; width: 16px; align-self: stretch; margin-block: -8px;
+    --h: linear-gradient(var(--tree-line), var(--tree-line));
+  }
+  .tree-node::after {
+    order: 4;
+    background:
+      var(--h) 0 50% / 100% var(--line-w) no-repeat,
+      var(--h) 100% 100% / var(--line-w) 50% no-repeat,
+      var(--h) 100% 0 / var(--line-w) 50% no-repeat;
+  }
+  .tree-node:first-child::after {
+    background: var(--h) 0 50% / 100% var(--line-w) no-repeat, var(--h) 100% 100% / var(--line-w) 50% no-repeat;
+  }
+  .tree-node:last-child::after {
+    background: var(--h) 0 50% / 100% var(--line-w) no-repeat, var(--h) 100% 0 / var(--line-w) 50% no-repeat;
+  }
+  .tree-node:only-child::after { background: var(--h) 0 50% / 100% var(--line-w) no-repeat; }
+
+  .tree-kids { flex: none; }
+  .tree-kid { display: flex; align-items: center; padding-block: 8px; }
+  .tree-kid::before {
+    background:
+      var(--h) 0 50% / 100% var(--line-w) no-repeat,
+      var(--h) 0 100% / var(--line-w) 50% no-repeat,
+      var(--h) 0 0 / var(--line-w) 50% no-repeat;
+  }
+  .tree-kid:first-child::before {
+    background: var(--h) 0 50% / 100% var(--line-w) no-repeat, var(--h) 0 100% / var(--line-w) 50% no-repeat;
+  }
+  .tree-kid:last-child::before {
+    background: var(--h) 0 50% / 100% var(--line-w) no-repeat, var(--h) 0 0 / var(--line-w) 50% no-repeat;
+  }
+  .tree-kid:only-child::before { background: var(--h) 0 50% / 100% var(--line-w) no-repeat; }
+}
